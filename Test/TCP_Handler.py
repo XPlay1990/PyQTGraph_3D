@@ -3,14 +3,10 @@ Jan Adamczyk - 2018
 """
 
 import socket
-import _thread
-from concurrent.futures import thread
 from threading import Thread
 
-import GLSurfacePlot
 
-
-class startSocket:
+class TCP_Handler:
     """demonstration class only
       - coded for clarity, not efficiency
     """
@@ -19,14 +15,17 @@ class startSocket:
     replace_list = ['[', ']', '\r', ' ']
     updateThread = Thread();
 
-    def __init__(self, sock=None):
+    def __init__(self, surface3d_Graph, line2D_Graph, sock=None):
+        self.surface3d_Graph = surface3d_Graph
+        self.line2D_Graph = line2D_Graph
         if sock is None:
             self.sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
         else:
             self.sock = sock
         self.connect('127.0.0.1', 1337)
-        self.read()
+        socketReadThread = Thread(target=self.read)
+        socketReadThread.start()
 
     def connect(self, host, port):
         self.sock.connect((host, port))
@@ -39,7 +38,7 @@ class startSocket:
                 print('Socket closed!')
                 raise RuntimeError("socket connection broken")
             elif '\n' in chunk:
-                print('MSG Complete!')
+                # print('MSG Complete!')
 
                 # split at newline
                 split = chunk.split('\n')
@@ -65,7 +64,13 @@ class startSocket:
                 if not self.updateThread.is_alive():
                     # starting independent Graph-Thread
                     # GLSurfacePlot.updateSelf()
-                    GLSurfacePlot.update(self.completeFrames)
+                    update3D = Thread(target=self.surface3d_Graph.updateData,
+                                      args=([self.completeFrames]))
+                    update2D = Thread(target=self.line2D_Graph.updateData, args=([self.completeFrames]))
+                    update2D.start()
+                    update3D.start()
+                    update3D.join()
+                    update2D.join()
                     # self.updateThread = Thread(target=GLSurfacePlot.update, args=(self.completeFrames))
                     # self.updateThread.start()
 
@@ -79,10 +84,3 @@ class startSocket:
         for cur_word in replace_list:
             cur_string = cur_string.replace(cur_word, '')
         return cur_string
-
-
-t1 = Thread(target=GLSurfacePlot.init)
-t2 = Thread(target=startSocket)
-
-t1.start()
-t2.start()
