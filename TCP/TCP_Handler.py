@@ -4,9 +4,6 @@ Jan Adamczyk - 2018
 
 import socket
 from threading import Thread
-from tkinter import *
-from Graphs.Line2D_Graph import Line2D_Graph
-from Graphs import Surface3D_Graph
 
 
 class TCP_Handler:
@@ -18,22 +15,17 @@ class TCP_Handler:
     replace_list = ['[', ']', '\r', ' ']
     updateThread = Thread();
 
-    def __init__(self, sock=None):
-        # self.surfacePlot = Surface3D_Graph.Surface3D_Graph();
-        self.surface3DGraph = Surface3D_Graph.Surface3D_Graph()
-        surface3DThread = Thread(target=self.surface3DGraph.startGUI)
-        surface3DThread.start()
-        Line2D_Graph.__init__(Line2D_Graph)
-        #line2DThread = Thread(target=Line2D_Graph.startGUI, args=Line2D_Graph)
-        #line2DThread.start()
-        Line2D_Graph.startGUI(Line2D_Graph)
+    def __init__(self, surface3d_Graph, line2D_Graph, sock=None):
+        self.surface3d_Graph = surface3d_Graph
+        self.line2D_Graph = line2D_Graph
         if sock is None:
             self.sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
         else:
             self.sock = sock
         self.connect('127.0.0.1', 1337)
-        self.read()
+        socketReadThread = Thread(target=self.read)
+        socketReadThread.start()
 
     def connect(self, host, port):
         self.sock.connect((host, port))
@@ -72,8 +64,9 @@ class TCP_Handler:
                 if not self.updateThread.is_alive():
                     # starting independent Graph-Thread
                     # GLSurfacePlot.updateSelf()
-                    update3D = Thread(target=(self.surface3DGraph.update), args=([self.completeFrames]))
-                    update2D = Thread(target=Line2D_Graph.update, args=(Line2D_Graph, [self.completeFrames]))
+                    update3D = Thread(target=self.surface3d_Graph.updateData,
+                                      args=([self.completeFrames]))
+                    update2D = Thread(target=self.line2D_Graph.updateData, args=([self.completeFrames]))
                     update2D.start()
                     update3D.start()
                     update3D.join()

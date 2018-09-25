@@ -1,63 +1,63 @@
-import datetime
-from odbc import dataError
-
-from pyqtgraph.Qt import QtGui, QtCore
-import numpy as np
+# -*- coding: utf-8 -*-
+"""
+Jan Adamczyk - 2018
+"""
 import pyqtgraph as pg
+from pyqtgraph.Qt import QtCore, QtGui
+import numpy as np
 
 
-class Line2D_Graph:
-    def __init__(self):
-        self.activeIndex = 1;
-        self.data = np.random.normal(size=(1, 1000))
+class Line2DGraph(pg.GraphicsWindow):
+    pg.setConfigOption('background', 'w')
+    pg.setConfigOption('foreground', 'k')
+    ptr1 = 0
 
-    def startGUI(self):
-        # QtGui.QApplication.setGraphicsSystem('raster')
-        app = QtGui.QApplication([])
-        # mw = QtGui.QMainWindow()
-        # mw.resize(800,800)
+    def __init__(self, parent=None, **kargs):
+        self.widthOfData = 1000
+        pg.GraphicsWindow.__init__(self, **kargs)
+        self.setParent(parent)
+        self.setWindowTitle('Radar-Plot')
+        p1 = self.addPlot(labels={'left': 'Voltage', 'bottom': 'Time'})
+        self.data1 = np.zeros(self.widthOfData)
+        self.data2 = np.zeros(self.widthOfData)
+        self.curve1 = p1.plot(self.data1, pen=(3, 3))
+        self.curve2 = p1.plot(self.data2, pen=(2, 3))
 
+        # timer = pg.QtCore.QTimer(self)
+        # timer.timeout.connect(self.update)
+        # timer.start(2000)  # number of seconds (every 1000) for next update
 
-        win = pg.GraphicsWindow(title="Basic plotting examples")
-        win.resize(1000, 600)
-        win.setWindowTitle('pyqtgraph example: Plotting')
+    def update(self):
+        self.data1[:-1] = self.data1[1:]  # shift data in the array one sample left
+        # (see also: np.roll)
+        self.data1[-1] = np.random.normal()
+        self.ptr1 += 1
+        self.curve1.setData(self.data1)
+        self.curve1.setPos(self.ptr1, 0)
 
-        # Enable antialiasing for prettier plots
-        pg.setConfigOptions(antialias=True)
+        self.data2[:-1] = self.data2[1:]  # shift data in the array one sample left
+        # (see also: np.roll)
+        self.data2[-1] = np.random.normal()
+        self.curve2.setData(self.data2)
+        self.curve2.setPos(self.ptr1, 0)
 
-        line = win.addPlot(title="Updating plot")
-        self.curve = line.plot(pen='y')
-
-        #import sys
-        #sys.exit(app.exec_())
-
-        ## Start Qt event loop unless running in interactive mode or using pyside.
-        #if __name__ == '__main__':
-            #import sys
-
-            #if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-               # QtGui.QApplication.instance().exec_()
-
-    def selfUpdate(self):
-        global curve, data, ptr, curve
-        self.curve.setData(data[ptr % 1])
-        if ptr == 0:
-            self.line.enableAutoRange('xy', False)  ## stop auto-scaling after the first data set is plotted
-        ptr += 1
-
-    def update(self, framesList):
-        timeBeforeUpdate = datetime.datetime.now()
+    def updateData(self, framesList):
         for frame in framesList:
-            # data = np.delete(data, 0, 0)
-            frame = np.array(frame, ndmin=2)
-            # print('data: ', data)
-            # print('frame: ', frame)
-            t = frame.item(self.activeIndex)
-            # data = np.concatenate((data, [t]))
-            self.data = np.append(self.data, t)
-            self.data = np.delete(self.data, 0, 0)
-            self.curve.setData(self.data)
-        timeAfterUpdate = datetime.datetime.now()
-        timeDiff = timeAfterUpdate - timeBeforeUpdate
-        elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
-        # print(elapsed_ms, ' ms')
+            self.data1[:-1] = self.data1[1:]  # shift data in the array one sample left
+            # (see also: np.roll)
+            self.data1[-1] = frame[0]
+            self.ptr1 += 1
+            self.curve1.setData(self.data1)
+            self.curve1.setPos(self.ptr1, 0)
+
+            self.data2[:-1] = self.data2[1:]  # shift data in the array one sample left
+            # (see also: np.roll)
+            self.data2[-1] = frame[1]
+            self.curve2.setData(self.data2)
+            self.curve2.setPos(self.ptr1, 0)
+
+
+if __name__ == '__main__':
+    w = Line2DGraph()
+    w.show()
+    QtGui.QApplication.instance().exec_()

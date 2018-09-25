@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 class Ui_MainWindow(object):
@@ -88,6 +88,6 @@ class Ui_MainWindow(object):
         self.actionTestMen.setText(_translate("MainWindow", "TestMenü"))
 
 
-from Test.Line2D_Graph import Line2DGraph
-from Test.Surface3D_Graph import Surface3D_Graph
-from Test.TCP_Handler import TCP_Handler
+from Graphs.Line2D_Graph import Line2DGraph
+from Graphs.Surface3D_Graph import Surface3D_Graph
+from TCP.TCP_Handler import TCP_Handler

@@ -1,27 +1,32 @@
+# -*- coding: utf-8 -*-
 """
 Jan Adamczyk - 2018
 """
-from threading import Thread
-from tkinter import Tk, Label, Entry, Button
+from PyQt5 import QtGui  # Import the PyQt4 module we'll need
+import sys  # We need sys so that we can pass argv to QApplication
 
-from Graphs import Surface3D_Graph, Line2D_Graph
-from TCP.TCP_Handler import TCP_Handler
-
-tcp_Thread = Thread(target=TCP_Handler)
-tcp_Thread.start()
+import GUI.design  # This file holds our MainWindow and all design related things
 
 
-def clicked():
-    Surface3D_Graph.widthOfData = txt.get()
+# it also keeps events etc that we defined in Qt Designer
+
+class ExampleApp(QtGui.QMainWindow, GUI.design.Ui_MainWindow):
+    def __init__(self):
+        # Explaining super is out of the scope of this article
+        # So please google it if you're not familar with it
+        # Simple reason why we use it here is that it allows us to
+        # access variables, methods etc in the design.py file
+        super(self.__class__, self).__init__()
+        self.setupUi(self)  # This is defined in design.py file automatically
+        # It sets up layout and widgets that are defined
 
 
-window = Tk()
-window.title("Config")
-window.geometry('350x200')
-lbl = Label(window, text="Data-width")
-lbl.grid(column=0, row=0)
-txt = Entry(window, width=10)
-txt.grid(column=1, row=0)
-btn = Button(window, text="Set", command=clicked)
-btn.grid(column=2, row=0)
-window.mainloop()
+def main():
+    app = QtGui.QApplication(sys.argv)  # A new instance of QApplication
+    form = ExampleApp()  # We set the form to be our ExampleApp (design)
+    form.show()  # Show the form
+    sys.exit(app.exec_())  # and execute the app
+
+
+if __name__ == '__main__':  # if we're running file directly and not importing it
+    main()  # run the main function
