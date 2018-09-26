@@ -49,6 +49,7 @@ class Surface3D_Graph(gl.GLViewWidget):
         # xAxis.paint()
         # axis.setSize(self.valueNumber, self.valueNumber, self.valueNumber)
         self.addItem(axis)
+        # self.renderText(0., 0., 0., 'text')
 
         ## Add a grid to the view
         g = gl.GLGridItem()
@@ -135,7 +136,10 @@ class Surface3D_Graph(gl.GLViewWidget):
         elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
         # print(elapsed_ms, ' ms')
 
-    # init()
-    # timer = QtCore.QTimer()
-    # timer.timeout.connect(updateSelf)
-    # timer.start(20)
+    # changes sample-quantity of shown data
+    def updateWidthOfData(self, quantity):
+        self.widthOfData = quantity
+
+    # changes sample-quantity of incoming data
+    def updateNumberOfData(self, quantity):
+        self.numberOfData = quantity

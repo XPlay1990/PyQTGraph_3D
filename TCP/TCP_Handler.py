@@ -32,7 +32,7 @@ class TCP_Handler:
 
     def read(self):
         while True:
-            chunk = self.sock.recv(50)  # if datapackets are smaller then this or splitting-method has to change!
+            chunk = self.sock.recv(50)  # if datapackets are smaller than this or splitting-method has to change!
             chunk = chunk.decode("utf-8")
             if chunk == '':
                 print('Socket closed!')

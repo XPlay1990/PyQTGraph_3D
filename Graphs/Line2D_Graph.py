@@ -17,11 +17,14 @@ class Line2DGraph(pg.GraphicsWindow):
         pg.GraphicsWindow.__init__(self, **kargs)
         self.setParent(parent)
         self.setWindowTitle('Radar-Plot')
-        p1 = self.addPlot(labels={'left': 'Voltage', 'bottom': 'Time'})
+        self.p1 = self.addPlot(labels={'left': 'Voltage', 'bottom': 'Time'})
+        self.p1.showGrid(x=True, y=True)
         self.data1 = np.zeros(self.widthOfData)
         self.data2 = np.zeros(self.widthOfData)
-        self.curve1 = p1.plot(self.data1, pen=(3, 3))
-        self.curve2 = p1.plot(self.data2, pen=(2, 3))
+        self.curve1 = self.p1.plot(self.data1, pen=(3, 3))
+        self.curve2 = self.p1.plot(self.data2, pen=(2, 3))
+
+        self.activeChannels = []
 
         # timer = pg.QtCore.QTimer(self)
         # timer.timeout.connect(self.update)
@@ -55,6 +58,15 @@ class Line2DGraph(pg.GraphicsWindow):
             self.data2[-1] = frame[1]
             self.curve2.setData(self.data2)
             self.curve2.setPos(self.ptr1, 0)
+
+    # changes sample-quantity of the shown data
+    def updateWidthOfData(self, quantity):
+        self.widthOfData = quantity
+
+    # add and remove 2D Lines
+    def changeLine(self, lineState):
+        self.curves.append(self.p1.plot(self.data1, pen=(3, 3)))
+        self.activeChannels.append(lineState.line)
 
 
 if __name__ == '__main__':
