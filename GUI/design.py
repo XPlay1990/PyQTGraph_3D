@@ -5,6 +5,7 @@
 # Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
+import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -46,7 +47,6 @@ class Ui_MainWindow(object):
         self.gridLayout_5.setObjectName("gridLayout_5")
         self.comboBox = QtWidgets.QComboBox(self.gridLayoutWidget_2)
         self.comboBox.setObjectName("comboBox")
-        self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
@@ -108,11 +108,17 @@ class Ui_MainWindow(object):
         self.setupTCP()
 
     def setupTCP(self):
-        tcp = TCP_Handler(self.surfaceWidget, self.lineGraphWidget)
+        self.tcpHandler = TCP_Handler(self.surfaceWidget, self.lineGraphWidget)
 
     def on_combobox_3D_changed(self, value):
-        print("combobox 3D changed", value)
-        self.surfaceWidget.updateNumberOfData(value)
+        try:
+            print("combobox 3D changed", value)
+            # wait for last update to finish, so that changes to data don't get overwritten
+            self.tcpHandler.stopUpdating()
+            self.surfaceWidget.updateWidthOfData(int(value))
+            self.tcpHandler.startUpdating()
+        except:
+            print("Unexpected error:", sys.exc_info()[1])
 
     def on_combobox_2D_changed(self, value):
         print("combobox 2D changed", value)
@@ -126,7 +132,6 @@ class Ui_MainWindow(object):
         self.comboBox.setItemText(2, _translate("MainWindow", "250"))
         self.comboBox.setItemText(3, _translate("MainWindow", "500"))
         self.comboBox.setItemText(4, _translate("MainWindow", "1000"))
-        self.comboBox.setItemText(5, _translate("MainWindow", "2500"))
         self.comboBox_2.setCurrentText(_translate("MainWindow", "500"))
         self.comboBox_2.setItemText(0, _translate("MainWindow", "50"))
         self.comboBox_2.setItemText(1, _translate("MainWindow", "100"))

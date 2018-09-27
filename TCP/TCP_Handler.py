@@ -3,6 +3,7 @@ Jan Adamczyk - 2018
 """
 
 import socket
+from concurrent import futures
 from threading import Thread
 
 
@@ -13,17 +14,19 @@ class TCP_Handler:
     completeFrames = []
     incompleteFrames = []
     replace_list = ['[', ']', '\r', ' ']
-    updateThread = Thread();
 
     def __init__(self, surface3d_Graph, line2D_Graph, sock=None):
         self.surface3d_Graph = surface3d_Graph
         self.line2D_Graph = line2D_Graph
+        self.updateList = [self.surface3d_Graph.updateData, self.line2D_Graph.updateData]
+        self.stopUpdate = False
         if sock is None:
             self.sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
         else:
             self.sock = sock
         self.connect('127.0.0.1', 1337)
+        self.executor = futures.ThreadPoolExecutor(2)
         socketReadThread = Thread(target=self.read)
         socketReadThread.start()
 
@@ -61,23 +64,29 @@ class TCP_Handler:
                 # print(self.completeFrames)
 
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
-                if not self.updateThread.is_alive():
-                    # starting independent Graph-Thread
-                    # GLSurfacePlot.updateSelf()
-                    update3D = Thread(target=self.surface3d_Graph.updateData,
-                                      args=([self.completeFrames]))
-                    update2D = Thread(target=self.line2D_Graph.updateData, args=([self.completeFrames]))
-                    update2D.start()
-                    update3D.start()
-                    update3D.join()
-                    update2D.join()
-                    # self.updateThread = Thread(target=GLSurfacePlot.update, args=(self.completeFrames))
-                    # self.updateThread.start()
+                if self.executor._work_queue.qsize() == 0 and not self.stopUpdate:
+                    # starting independent Graph-Threads
+                    self.graphfutures = []
+                    future = self.executor.submit(self.surface3d_Graph.updateData, self.completeFrames)
+                    self.graphfutures.append(future)
+                    future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames)
+                    self.graphfutures.append(future)
+                    self.waitForUpdatesToFinish()
 
                     self.completeFrames = []
-                    # self.completeFramesIndex = 0
             else:  # and chunk != '['and chunk != ']'
                 self.incompleteFrames.append(chunk)
+
+    def stopUpdating(self):
+        self.stopUpdate = True
+        self.waitForUpdatesToFinish()
+
+    def startUpdating(self):
+        self.stopUpdate = False
+
+    def waitForUpdatesToFinish(self):
+        for future in self.graphfutures:
+            future.result()
 
     @staticmethod
     def remove_multiple_strings(cur_string, replace_list):
