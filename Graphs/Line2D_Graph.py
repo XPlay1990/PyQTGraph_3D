@@ -2,6 +2,8 @@
 """
 Jan Adamczyk - 2018
 """
+import sys
+
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 import numpy as np
@@ -13,7 +15,7 @@ class Line2DGraph(pg.GraphicsWindow):
     ptr1 = 0
 
     def __init__(self, parent=None, **kargs):
-        self.widthOfData = 1000
+        self.widthOfData = 500
         pg.GraphicsWindow.__init__(self, **kargs)
         self.setParent(parent)
         self.setWindowTitle('Radar-Plot')
@@ -61,7 +63,11 @@ class Line2DGraph(pg.GraphicsWindow):
 
     # changes sample-quantity of the shown data
     def updateWidthOfData(self, quantity):
-        self.widthOfData = quantity
+        try:
+            self.widthOfData = quantity
+            self.data1 = np.zeros(self.widthOfData)
+        except:
+            print("Unexpected error:", sys.exc_info()[1])
 
     # add and remove 2D Lines
     def changeLine(self, lineState):

@@ -123,6 +123,10 @@ class Ui_MainWindow(object):
     def on_combobox_2D_changed(self, value):
         print("combobox 2D changed", value)
 
+    #        self.tcpHandler.stopUpdating()
+    #        self.lineGraphWidget.updateWidthOfData(int(value))
+    #        self.tcpHandler.startUpdating()
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "RadarPlotter"))
@@ -143,8 +147,8 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Data Shown:"))
         self.pushButton.setText(_translate("MainWindow", "Ok"))
         self.label.setText(_translate("MainWindow", "Incoming Data/t:"))
-        self.menutest.setTitle(_translate("MainWindow", "test"))
-        self.menuTest2.setTitle(_translate("MainWindow", "Test2"))
+        self.menutest.setTitle(_translate("MainWindow", "3D"))
+        self.menuTest2.setTitle(_translate("MainWindow", "2D"))
         self.actionTestMen.setText(_translate("MainWindow", "TestMenü"))
 
         self.comboBox.currentTextChanged.connect(self.on_combobox_3D_changed)

@@ -85,7 +85,7 @@ class Surface3D_Graph(gl.GLViewWidget):
             # print('data: ', data)
             # print('frame: ', frame)
             self.surfaceData = np.concatenate((self.surfaceData, frame))
-            print("x", len(self.x), "y", len(self.y), "data", self.surfaceData.shape)
+            #print("x", len(self.x), "y", len(self.y), "data", self.surfaceData.shape)
             self.surfacePlot.setData(z=self.surfaceData)
         timeAfterUpdate = datetime.datetime.now()
         timeDiff = timeAfterUpdate - timeBeforeUpdate
