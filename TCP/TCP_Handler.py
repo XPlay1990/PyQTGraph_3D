@@ -1,7 +1,7 @@
 """
 Jan Adamczyk - 2018
 """
-
+import datetime
 import socket
 from concurrent import futures
 from threading import Thread
@@ -20,6 +20,7 @@ class TCP_Handler:
         self.line2D_Graph = line2D_Graph
         self.updateList = [self.surface3d_Graph.updateData, self.line2D_Graph.updateData]
         self.stopUpdate = False
+        self.graphfutures = []
         if sock is None:
             self.sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
@@ -64,29 +65,47 @@ class TCP_Handler:
                 # print(self.completeFrames)
 
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
-                if self.executor._work_queue.qsize() == 0 and not self.stopUpdate:
+                if self.updateFinished() and not self.stopUpdate:
+                    timeBeforeUpdate = datetime.datetime.now()
                     # starting independent Graph-Threads
                     self.graphfutures = []
-                    future = self.executor.submit(self.surface3d_Graph.updateData, self.completeFrames)
+                    future = self.executor.submit(self.surface3d_Graph.updateData, self.completeFrames.copy())
                     self.graphfutures.append(future)
-                    future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames)
+                    future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames.copy())
                     self.graphfutures.append(future)
-                    self.waitForUpdatesToFinish()
+                    # self.waitForUpdatesToFinish()
 
                     self.completeFrames = []
+
+                    timeAfterUpdate = datetime.datetime.now()
+                    timeDiff = timeAfterUpdate - timeBeforeUpdate
+                    elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
+                    print(elapsed_ms, ' ms')
             else:  # and chunk != '['and chunk != ']'
                 self.incompleteFrames.append(chunk)
 
+    def updateFinished(self):
+        isFinished = True
+        for future in self.graphfutures:
+            isFinished = isFinished and future.done()
+        return isFinished
+
     def stopUpdating(self):
-        self.stopUpdate = True
-        self.waitForUpdatesToFinish()
+        try:
+            self.stopUpdate = True
+            self.waitForUpdatesToFinish()
+        except ValueError:
+            pass
 
     def startUpdating(self):
         self.stopUpdate = False
 
     def waitForUpdatesToFinish(self):
         for future in self.graphfutures:
-            future.result()
+            try:
+                future.result()
+            except AttributeError:
+                pass  # why does this occur after setting incoming data very low and wait for a while?
 
     @staticmethod
     def remove_multiple_strings(cur_string, replace_list):

@@ -107,6 +107,10 @@ class Ui_MainWindow(object):
 
         self.setupTCP()
 
+        self.comboBox.currentTextChanged.connect(self.on_combobox_3D_changed)
+        self.comboBox_2.currentTextChanged.connect(self.on_combobox_2D_changed)
+        self.pushButton.pressed.connect(self.on_pushButton_incData_changed)
+
     def setupTCP(self):
         self.tcpHandler = TCP_Handler(self.surfaceWidget, self.lineGraphWidget)
 
@@ -126,6 +130,17 @@ class Ui_MainWindow(object):
     #        self.tcpHandler.stopUpdating()
     #        self.lineGraphWidget.updateWidthOfData(int(value))
     #        self.tcpHandler.startUpdating()
+
+    def on_pushButton_incData_changed(self):
+        #try:
+            incomingData = self.spinBox.value()
+            print("pushbutton pressed!", incomingData)
+            # wait for last update to finish, so that changes to data don't get overwritten
+            self.tcpHandler.stopUpdating()
+            self.surfaceWidget.updateNumberOfData(incomingData)
+            self.tcpHandler.startUpdating()
+        #except:
+            #print("on_pushButton_incData_changed:", sys.exc_info()[1])
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -150,9 +165,6 @@ class Ui_MainWindow(object):
         self.menutest.setTitle(_translate("MainWindow", "3D"))
         self.menuTest2.setTitle(_translate("MainWindow", "2D"))
         self.actionTestMen.setText(_translate("MainWindow", "TestMenü"))
-
-        self.comboBox.currentTextChanged.connect(self.on_combobox_3D_changed)
-        self.comboBox_2.currentTextChanged.connect(self.on_combobox_2D_changed)
 
 
 from Graphs.Line2D_Graph import Line2DGraph

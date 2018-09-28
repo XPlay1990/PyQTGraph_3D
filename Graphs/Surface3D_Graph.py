@@ -2,6 +2,7 @@
 """
 Jan Adamczyk - 2018
 """
+import os
 import sys
 
 import pyqtgraph.opengl as gl
@@ -63,34 +64,23 @@ class Surface3D_Graph(gl.GLViewWidget):
         self.g.setDepthValue(10)  # draw grid after surfaces since they may be translucent
         self.addItem(self.g)
 
-    # update via timer
-    def updateSelf(self):
-        timeBeforeUpdate = datetime.datetime.now()
-        self.surfaceData = np.delete(self.surfaceData, 0, 0)
-        newValues = np.random.randint(5, size=(1, self.numberOfData))
-        # print('newval ', newValues)
-        self.surfaceData = np.concatenate((self.surfaceData, newValues))
-        self.surfacePlot.setData(z=self.surfaceData)
-        timeAfterUpdate = datetime.datetime.now()
-        timeDiff = timeAfterUpdate - timeBeforeUpdate
-        elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
-        print(elapsed_ms, ' ms')
-
     # update via tcp
     def updateData(self, framesList):
-        timeBeforeUpdate = datetime.datetime.now()
-        for frame in framesList:
-            self.surfaceData = np.delete(self.surfaceData, 0, 0)
-            frame = np.array(frame, ndmin=2)
-            # print('data: ', data)
-            # print('frame: ', frame)
-            self.surfaceData = np.concatenate((self.surfaceData, frame))
-            #print("x", len(self.x), "y", len(self.y), "data", self.surfaceData.shape)
-            self.surfacePlot.setData(z=self.surfaceData)
-        timeAfterUpdate = datetime.datetime.now()
-        timeDiff = timeAfterUpdate - timeBeforeUpdate
-        elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
-        # print(elapsed_ms, ' ms')
+        try:
+            timeBeforeUpdate = datetime.datetime.now()
+            for frame in framesList:
+                self.surfaceData = np.delete(self.surfaceData, 0, 0)
+                frame = np.array(frame, ndmin=2)
+                self.surfaceData = np.concatenate((self.surfaceData, frame))
+                # print("x", len(self.x), "y", len(self.y), "data", self.surfaceData.shape)
+                self.surfacePlot.setData(z=self.surfaceData)
+            timeAfterUpdate = datetime.datetime.now()
+            timeDiff = timeAfterUpdate - timeBeforeUpdate
+            elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
+            # print(elapsed_ms, ' ms')
+        except:
+            print("3D Update:", sys.exc_info()[1])
+            print("Expected Number of Data: ", self.surfaceData.shape[1], "Incoming Data: ", frame.size)
 
     # changes sample-quantity of shown data
     def updateWidthOfData(self, quantity):
@@ -100,8 +90,14 @@ class Surface3D_Graph(gl.GLViewWidget):
             self.widthOfData = quantity
             self.addSurfaceGraph()
         except:
-            print("Unexpected error:", sys.exc_info()[1])
+            print("updateWidthOfData:", sys.exc_info()[1])
 
     # changes sample-quantity of incoming data
     def updateNumberOfData(self, quantity):
-        self.numberOfData = quantity
+        try:
+            self.removeItem(self.surfacePlot)
+            self.removeItem(self.g)
+            self.numberOfData = int(quantity)
+            self.addSurfaceGraph()
+        except:
+            print("updateNumberOfData:", sys.exc_info()[1])
