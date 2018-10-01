@@ -8,6 +8,9 @@
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QListWidgetItem
+
+defaultNumberOfData = 1000
 
 
 class Ui_MainWindow(object):
@@ -34,10 +37,10 @@ class Ui_MainWindow(object):
         self.splitter.setSizePolicy(sizePolicy)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
-        self.surfaceWidget = Surface3D_Graph(self.splitter)
+        self.surfaceWidget = Surface3D_Graph(defaultNumberOfData, self.splitter)
         self.surfaceWidget.setMinimumSize(QtCore.QSize(0, 400))
         self.surfaceWidget.setObjectName("GLViewWidget")
-        self.lineGraphWidget = Line2DGraph(self.splitter)
+        self.lineGraphWidget = Line2DGraph(defaultNumberOfData, self.splitter)
         self.lineGraphWidget.setObjectName("widget")
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self.gridLayoutWidget_2 = QtWidgets.QWidget(self.splitter_2)
@@ -45,6 +48,12 @@ class Ui_MainWindow(object):
         self.gridLayout_5 = QtWidgets.QGridLayout(self.gridLayoutWidget_2)
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_5.setObjectName("gridLayout_5")
+        self.pushButton_deactivateChannels = QtWidgets.QPushButton(self.gridLayoutWidget_2)
+        self.pushButton_deactivateChannels.setObjectName("pushButton_3")
+        self.gridLayout_5.addWidget(self.pushButton_deactivateChannels, 4, 3, 1, 1)
+        self.pushButton_activateChannels = QtWidgets.QPushButton(self.gridLayoutWidget_2)
+        self.pushButton_activateChannels.setObjectName("pushButton_2")
+        self.gridLayout_5.addWidget(self.pushButton_activateChannels, 4, 2, 1, 1)
         self.comboBox = QtWidgets.QComboBox(self.gridLayoutWidget_2)
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
@@ -72,13 +81,33 @@ class Ui_MainWindow(object):
         self.spinBox.setMaximum(5000)
         self.spinBox.setProperty("value", 1000)
         self.spinBox.setObjectName("spinBox")
-        self.gridLayout_5.addWidget(self.spinBox, 3, 1, 1, 2)
+        self.gridLayout_5.addWidget(self.spinBox, 6, 1, 1, 2)
         self.pushButton = QtWidgets.QPushButton(self.gridLayoutWidget_2)
         self.pushButton.setObjectName("pushButton")
-        self.gridLayout_5.addWidget(self.pushButton, 4, 1, 1, 2)
+        self.gridLayout_5.addWidget(self.pushButton, 7, 1, 1, 2)
         self.label = QtWidgets.QLabel(self.gridLayoutWidget_2)
         self.label.setObjectName("label")
-        self.gridLayout_5.addWidget(self.label, 2, 1, 1, 2)
+        self.gridLayout_5.addWidget(self.label, 5, 1, 1, 2)
+        self.listWidget_activeChannels = QtWidgets.QListWidget(self.gridLayoutWidget_2)
+        self.listWidget_activeChannels.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.listWidget_activeChannels.setObjectName("listWidget")
+        self.gridLayout_5.addWidget(self.listWidget_activeChannels, 3, 3, 1, 1)
+        self.listWidget_4 = QtWidgets.QListWidget(self.gridLayoutWidget_2)
+        self.listWidget_4.setObjectName("listWidget_4")
+        self.gridLayout_5.addWidget(self.listWidget_4, 3, 0, 1, 1)
+        self.listWidget_inactiveChannels = QtWidgets.QListWidget(self.gridLayoutWidget_2)
+        self.listWidget_inactiveChannels.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.listWidget_inactiveChannels.setObjectName("listWidget_2")
+        self.gridLayout_5.addWidget(self.listWidget_inactiveChannels, 3, 2, 1, 1)
+        self.listWidget_3 = QtWidgets.QListWidget(self.gridLayoutWidget_2)
+        self.listWidget_3.setObjectName("listWidget_3")
+        self.gridLayout_5.addWidget(self.listWidget_3, 3, 1, 1, 1)
+        self.label_4 = QtWidgets.QLabel(self.gridLayoutWidget_2)
+        self.label_4.setObjectName("label_4")
+        self.gridLayout_5.addWidget(self.label_4, 2, 2, 1, 1)
+        self.label_5 = QtWidgets.QLabel(self.gridLayoutWidget_2)
+        self.label_5.setObjectName("label_5")
+        self.gridLayout_5.addWidget(self.label_5, 2, 3, 1, 1)
         self.verticalLayout.addWidget(self.splitter_2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -105,11 +134,14 @@ class Ui_MainWindow(object):
         self.comboBox_2.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        self.initChannelLists()
         self.setupTCP()
 
         self.comboBox.currentTextChanged.connect(self.on_combobox_3D_changed)
         self.comboBox_2.currentTextChanged.connect(self.on_combobox_2D_changed)
         self.pushButton.pressed.connect(self.on_pushButton_incData_changed)
+        self.pushButton_activateChannels.pressed.connect(self.activateChannels)
+        self.pushButton_deactivateChannels.pressed.connect(self.deactiveChannels)
 
     def setupTCP(self):
         self.tcpHandler = TCP_Handler(self.surfaceWidget, self.lineGraphWidget)
@@ -132,19 +164,47 @@ class Ui_MainWindow(object):
     #        self.tcpHandler.startUpdating()
 
     def on_pushButton_incData_changed(self):
-        #try:
-            incomingData = self.spinBox.value()
-            print("pushbutton pressed!", incomingData)
-            # wait for last update to finish, so that changes to data don't get overwritten
-            self.tcpHandler.stopUpdating()
-            self.surfaceWidget.updateNumberOfData(incomingData)
-            self.tcpHandler.startUpdating()
-        #except:
-            #print("on_pushButton_incData_changed:", sys.exc_info()[1])
+        # try:
+        incomingData = self.spinBox.value()
+        print("pushbutton pressed!", incomingData)
+        # wait for last update to finish, so that changes to data don't get overwritten
+        self.tcpHandler.stopUpdating()
+        self.surfaceWidget.updateNumberOfData(incomingData)
+        self.lineGraphWidget.updateNumberOfData(incomingData)
+        self.tcpHandler.startUpdating()
+
+    # except:
+    # print("on_pushButton_incData_changed:", sys.exc_info()[1])
+
+    def initChannelLists(self):
+        for i in range(defaultNumberOfData):
+            self.listWidget_inactiveChannels.addItem(ListWidgetItem(str(i)))
+
+    def activateChannels(self):
+        items = [item.text() for item in self.listWidget_inactiveChannels.selectedItems()]
+        for item in items:
+            item = ListWidgetItem(item)
+        self.listWidget_activeChannels.addItems(items)
+        for item in self.listWidget_inactiveChannels.selectedItems():
+            self.listWidget_inactiveChannels.takeItem(self.listWidget_inactiveChannels.row(item))
+        self.listWidget_activeChannels.sortItems()
+        self.lineGraphWidget.addLines(items)
+
+    def deactiveChannels(self):
+        items = [item.text() for item in self.listWidget_activeChannels.selectedItems()]
+        for item in items:
+            item = ListWidgetItem(item)
+        self.listWidget_inactiveChannels.addItems(items)
+        for item in self.listWidget_activeChannels.selectedItems():
+            self.listWidget_activeChannels.takeItem(self.listWidget_activeChannels.row(item))
+        self.listWidget_inactiveChannels.sortItems()
+        self.lineGraphWidget.removeLines(items)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "RadarPlotter"))
+        self.pushButton_deactivateChannels.setText(_translate("MainWindow", "Deactivate"))
+        self.pushButton_activateChannels.setText(_translate("MainWindow", "Activate"))
         self.comboBox.setCurrentText(_translate("MainWindow", "500"))
         self.comboBox.setItemText(0, _translate("MainWindow", "50"))
         self.comboBox.setItemText(1, _translate("MainWindow", "100"))
@@ -162,9 +222,19 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Data Shown:"))
         self.pushButton.setText(_translate("MainWindow", "Ok"))
         self.label.setText(_translate("MainWindow", "Incoming Data/t:"))
+        self.label_4.setText(_translate("MainWindow", "Inactive Channels:"))
+        self.label_5.setText(_translate("MainWindow", "Active Channels:"))
         self.menutest.setTitle(_translate("MainWindow", "3D"))
         self.menuTest2.setTitle(_translate("MainWindow", "2D"))
         self.actionTestMen.setText(_translate("MainWindow", "TestMenü"))
+
+
+class ListWidgetItem(QListWidgetItem):
+    def __lt__(self, other):
+        try:
+            return int(self.text()) < int(other.text())
+        except Exception:
+            return QListWidgetItem.__lt__(self, other)
 
 
 from Graphs.Line2D_Graph import Line2DGraph

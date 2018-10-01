@@ -11,14 +11,13 @@ import datetime
 
 
 class Surface3D_Graph(gl.GLViewWidget):
-    def __init__(self, parent=None, **kargs):
+    def __init__(self, defaultNumberOfData, parent=None, **kargs):
+        self.numberOfData = defaultNumberOfData
+        self.widthOfData = 500
         # pg.GraphicsWindow.__init__(self, **kargs)
         gl.GLViewWidget.__init__(self, **kargs)
         self.setParent(parent)
         self.setWindowTitle('Radar-Plot')
-
-        self.numberOfData = 1000
-        self.widthOfData = 500
 
         self.addSurfaceGraph()
 
