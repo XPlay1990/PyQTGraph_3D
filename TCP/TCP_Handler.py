@@ -36,7 +36,7 @@ class TCP_Handler:
 
     def read(self):
         while True:
-            chunk = self.sock.recv(50)  # if datapackets are smaller than this or splitting-method has to change!
+            chunk = self.sock.recv(50)  # if datapackets are smaller, then this or splitting-method has to change!
             chunk = chunk.decode("utf-8")
             if chunk == '':
                 print('Socket closed!')
@@ -49,8 +49,8 @@ class TCP_Handler:
 
                 # reset and fill Frame
                 completeFrame = ""
-                for i in range(0, len(self.incompleteFrames)):
-                    completeFrame += self.incompleteFrames[i]
+                for char in self.incompleteFrames:
+                    completeFrame += char
                 completeFrame += split[0]
                 # completeFrame.replace('\r', '')
                 completeFrame = self.remove_multiple_strings(completeFrame, self.replace_list)
@@ -67,13 +67,8 @@ class TCP_Handler:
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
                 if self.updateFinished() and not self.stopUpdate:
                     timeBeforeUpdate = datetime.datetime.now()
-                    # starting independent Graph-Threads
-                    self.graphfutures = []
-                    future = self.executor.submit(self.surface3d_Graph.updateData, self.completeFrames.copy())
-                    self.graphfutures.append(future)
-                    future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames.copy())
-                    self.graphfutures.append(future)
-                    # self.waitForUpdatesToFinish()
+
+                    self.updateGraphs()
 
                     self.completeFrames = []
 
@@ -81,8 +76,17 @@ class TCP_Handler:
                     timeDiff = timeAfterUpdate - timeBeforeUpdate
                     elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
                     print(elapsed_ms, ' ms')
-            else:  # and chunk != '['and chunk != ']'
+            else:  # no "\n" found
                 self.incompleteFrames.append(chunk)
+
+    def updateGraphs(self):
+        # starting independent Graph-Threads
+        self.graphfutures = []
+        future = self.executor.submit(self.surface3d_Graph.updateData, self.completeFrames.copy())
+        self.graphfutures.append(future)
+        future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames.copy())
+        self.graphfutures.append(future)
+        # self.waitForUpdatesToFinish()
 
     def updateFinished(self):
         isFinished = True

@@ -2,11 +2,8 @@
 """
 Jan Adamczyk - 2018
 """
-import os
 import sys
-
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
 import numpy as np
 
 
@@ -44,7 +41,8 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
                                                          1:]  # shift data in the array one sample left
                     # (see also: np.roll)
                     self.dataArray[activeChannel][-1] = frame[activeChannel]
-                    self.dataArray[activeChannel][np.isinf(self.dataArray[activeChannel])] = np.nan
+                    self.dataArray[activeChannel][
+                        np.isinf(self.dataArray[activeChannel])] = np.nan  # should prevent problems with autoscaling
                     self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
         except:
             print("2D Update:", sys.exc_info()[1])
