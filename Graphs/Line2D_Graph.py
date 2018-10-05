@@ -13,7 +13,7 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
     ptr1 = 0
 
     def __init__(self, defaultNumberOfData, parent=None, **kargs):
-        #super().__init__()
+        # super().__init__()
         pg.GraphicsWindow.__init__(self, **kargs)
         self.numberOfData = defaultNumberOfData
         self.widthOfData = 500
@@ -23,6 +23,10 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
         self.setAntialiasing(True)
         self.p1 = self.addPlot(labels={'left': 'Voltage', 'bottom': 'Time'})
         self.p1.showGrid(x=True, y=True)
+        # Use automatic downsampling and clipping to reduce the drawing load
+        self.p1.setDownsampling(mode='peak')
+        self.p1.setClipToView(True)
+        self.p1.setRange(xRange=[0, self.widthOfData])
 
         self.dataArray = []
         for i in range(self.numberOfData):
@@ -34,17 +38,14 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
 
     def updateData(self, framesList):
         try:
-            for frame in framesList:
-                #Data Handling
+            for frame in framesList:  # Data Handling
                 for activeChannel in self.activeChannels:
                     self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
                                                          1:]  # shift data in the array one sample left
                     # (see also: np.roll)
                     self.dataArray[activeChannel][-1] = frame[activeChannel]
-                    self.dataArray[activeChannel][
-                        np.isinf(self.dataArray[activeChannel])] = np.nan  # should prevent problems with autoscaling
-            #drawing the graph
-            for activeChannel in self.activeChannels:
+
+            for activeChannel in self.activeChannels:  # drawing the graph
                 self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
         except:
             print("2D Update:", sys.exc_info()[1])
