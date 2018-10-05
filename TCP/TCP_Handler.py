@@ -66,6 +66,7 @@ class TCP_Handler:
                 # print(self.completeFrames)
 
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
+                print(len(self.completeFrames))
                 if self.updateFinished() and not self.stopUpdate:
                     timeAfterUpdate = datetime.datetime.now()
                     timeDiff = timeAfterUpdate - self.timeBeforeUpdate

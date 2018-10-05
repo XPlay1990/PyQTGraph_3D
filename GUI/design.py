@@ -39,7 +39,8 @@ class Ui_MainWindow(object):
         self.surfaceWidget = Surface3D_Graph(defaultNumberOfData, self.splitter)
         self.surfaceWidget.setMinimumSize(QtCore.QSize(0, 400))
         self.surfaceWidget.setObjectName("GLViewWidget")
-        self.lineGraphWidget = Line2DGraph(defaultNumberOfData, self.splitter)
+        #self.lineGraphWidget = Line2DGraph(defaultNumberOfData, self.splitter)
+        self.lineGraphWidget = ApplicationWindow(defaultNumberOfData, self.splitter)
         self.lineGraphWidget.setObjectName("widget")
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self.gridLayoutWidget_2 = QtWidgets.QWidget(self.splitter_2)
@@ -235,5 +236,6 @@ class ListWidgetItem(QListWidgetItem):
 
 
 from Graphs.Line2D_Graph import Line2DGraph
+from Graphs.matplot_2D import ApplicationWindow
 from Graphs.Surface3D_Graph import Surface3D_Graph
 from TCP.TCP_Handler import TCP_Handler
