@@ -30,6 +30,7 @@ class TCP_Handler:
         self.connect('127.0.0.1', 15688)
         self.executor = futures.ThreadPoolExecutor(2)
         socketReadThread = Thread(target=self.read)
+        socketReadThread.daemon = True
         socketReadThread.start()
 
     def connect(self, host, port):
@@ -67,7 +68,6 @@ class TCP_Handler:
 
                 print("Buffersize: ", len(self.completeFrames))
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
-                print(len(self.completeFrames))
                 if self.updateFinished() and not self.stopUpdate:
                     timeAfterUpdate = datetime.datetime.now()
                     timeDiff = timeAfterUpdate - self.timeBeforeUpdate

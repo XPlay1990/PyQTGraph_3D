@@ -1,3 +1,4 @@
+import datetime
 import sys
 import time
 
@@ -33,6 +34,7 @@ class ApplicationWindow(QtWidgets.QWidget):
         self.activeChannels = []
 
     def updateData(self, framesList):
+        self.timeBeforeUpdate = datetime.datetime.now()
         self._dynamic_ax.clear()
         # Shift the sinusoid as a function of time.
         try:
@@ -46,9 +48,14 @@ class ApplicationWindow(QtWidgets.QWidget):
                         np.isinf(self.dataArray[activeChannel])] = np.nan  # should prevent problems with autoscaling
             for activeChannel in self.activeChannels:
                 self._dynamic_ax.plot(self.graphrange, self.dataArray[activeChannel])
-            self._dynamic_ax.figure.canvas.draw()
+            if self.activeChannels:  # If list is not empty
+                self._dynamic_ax.figure.canvas.draw_idle()
         except:
             print("2D Update:", sys.exc_info()[1])
+        timeAfterUpdate = datetime.datetime.now()
+        timeDiff = timeAfterUpdate - self.timeBeforeUpdate
+        elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
+        print("Matplot 2D Time: ", elapsed_ms, ' ms')
 
     # changes sample-quantity of the shown data
     def updateWidthOfData(self, quantity):
