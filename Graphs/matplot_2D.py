@@ -15,13 +15,15 @@ else:
 from matplotlib.figure import Figure
 
 
-class ApplicationWindow(QtWidgets.QWidget):
+class ApplicationWindow(QtWidgets.QMainWindow):
     def __init__(self, defaultNumberOfData, splitter, parent=None):
         super().__init__()
         splitter.addWidget(self)
         self.numberOfData = defaultNumberOfData
         self.widthOfData = 500
-        layout = QtWidgets.QVBoxLayout(self)
+        self._main = QtWidgets.QWidget()
+        self.setCentralWidget(self._main)
+        layout = QtWidgets.QVBoxLayout(self._main)
 
         dynamic_canvas = FigureCanvas(Figure(figsize=(5, 3)))
         layout.addWidget(dynamic_canvas)
