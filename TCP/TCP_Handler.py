@@ -65,12 +65,13 @@ class TCP_Handler:
                 self.completeFrames.append(completeFrame)
                 # print(self.completeFrames)
 
+                print("Buffersize: ", len(self.completeFrames))
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
                 if self.updateFinished() and not self.stopUpdate:
                     timeAfterUpdate = datetime.datetime.now()
                     timeDiff = timeAfterUpdate - self.timeBeforeUpdate
                     elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
-                    print(elapsed_ms, ' ms')
+                    print("Redraw Time: ", elapsed_ms, ' ms')
                     self.timeBeforeUpdate = datetime.datetime.now()
 
                     self.updateGraphs()

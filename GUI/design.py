@@ -9,7 +9,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QListWidgetItem
 
-defaultNumberOfData = 129
+defaultNumberOfData = 1000
 
 
 class Ui_MainWindow(object):
