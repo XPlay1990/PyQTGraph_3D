@@ -30,6 +30,7 @@ class TCP_Handler:
         self.connect('127.0.0.1', 15688)
         self.executor = futures.ThreadPoolExecutor(2)
         socketReadThread = Thread(target=self.read)
+        socketReadThread.daemon = True
         socketReadThread.start()
 
     def connect(self, host, port):
