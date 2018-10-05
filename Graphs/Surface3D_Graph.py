@@ -12,6 +12,7 @@ import datetime
 
 class Surface3D_Graph(gl.GLViewWidget):
     def __init__(self, defaultNumberOfData, parent=None, **kargs):
+        super().__init__()
         self.numberOfData = defaultNumberOfData
         self.widthOfData = 500
         # pg.GraphicsWindow.__init__(self, **kargs)
@@ -72,7 +73,7 @@ class Surface3D_Graph(gl.GLViewWidget):
                 frame = np.array(frame, ndmin=2)
                 self.surfaceData = np.concatenate((self.surfaceData, frame))
                 # print("x", len(self.x), "y", len(self.y), "data", self.surfaceData.shape)
-                self.surfacePlot.setData(z=self.surfaceData)
+            self.surfacePlot.setData(z=self.surfaceData)
             timeAfterUpdate = datetime.datetime.now()
             timeDiff = timeAfterUpdate - timeBeforeUpdate
             elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)

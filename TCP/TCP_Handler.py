@@ -14,6 +14,7 @@ class TCP_Handler:
     completeFrames = []
     incompleteFrames = []
     replace_list = ['[', ']', '\r', ' ']
+    timeBeforeUpdate = datetime.datetime.now()
 
     def __init__(self, surface3d_Graph, line2D_Graph, sock=None):
         self.surface3d_Graph = surface3d_Graph
@@ -26,7 +27,7 @@ class TCP_Handler:
                 socket.AF_INET, socket.SOCK_STREAM)
         else:
             self.sock = sock
-        self.connect('127.0.0.1', 1337)
+        self.connect('127.0.0.1', 15688)
         self.executor = futures.ThreadPoolExecutor(2)
         socketReadThread = Thread(target=self.read)
         socketReadThread.start()
@@ -66,16 +67,15 @@ class TCP_Handler:
 
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
                 if self.updateFinished() and not self.stopUpdate:
-                    timeBeforeUpdate = datetime.datetime.now()
+                    timeAfterUpdate = datetime.datetime.now()
+                    timeDiff = timeAfterUpdate - self.timeBeforeUpdate
+                    elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
+                    print(elapsed_ms, ' ms')
+                    self.timeBeforeUpdate = datetime.datetime.now()
 
                     self.updateGraphs()
 
                     self.completeFrames = []
-
-                    timeAfterUpdate = datetime.datetime.now()
-                    timeDiff = timeAfterUpdate - timeBeforeUpdate
-                    elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
-                    print(elapsed_ms, ' ms')
             else:  # no "\n" found
                 self.incompleteFrames.append(chunk)
 

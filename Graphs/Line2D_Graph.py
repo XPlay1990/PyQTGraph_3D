@@ -13,10 +13,11 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
     ptr1 = 0
 
     def __init__(self, defaultNumberOfData, parent=None, **kargs):
+        #super().__init__()
+        pg.GraphicsWindow.__init__(self, **kargs)
         self.numberOfData = defaultNumberOfData
         self.widthOfData = 500
         self.graphrange = np.arange(0, self.widthOfData, 1)
-        pg.GraphicsWindow.__init__(self, **kargs)
         self.setParent(parent)
         self.setWindowTitle('Radar-Plot')
         self.setAntialiasing(True)
@@ -26,8 +27,6 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
         self.dataArray = []
         for i in range(self.numberOfData):
             self.dataArray.append(np.zeros(self.widthOfData))
-        self.curve1 = self.p1.plot(self.dataArray[1], pen=(3, 3))
-        self.curve2 = self.p1.plot(self.dataArray[2], pen=(2, 3))
         self.activeChannels = []
         self.linesList = {"lineIndex": "plot"}
         # self.p1.enableAutoRange()
@@ -36,6 +35,7 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
     def updateData(self, framesList):
         try:
             for frame in framesList:
+                #Data Handling
                 for activeChannel in self.activeChannels:
                     self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
                                                          1:]  # shift data in the array one sample left
@@ -43,7 +43,9 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
                     self.dataArray[activeChannel][-1] = frame[activeChannel]
                     self.dataArray[activeChannel][
                         np.isinf(self.dataArray[activeChannel])] = np.nan  # should prevent problems with autoscaling
-                    self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
+            #drawing the graph
+            for activeChannel in self.activeChannels:
+                self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
         except:
             print("2D Update:", sys.exc_info()[1])
 
