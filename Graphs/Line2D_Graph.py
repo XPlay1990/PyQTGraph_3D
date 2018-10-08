@@ -61,7 +61,7 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
                     self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
                                                          1:]  # shift data in the array one sample left
                     # (see also: np.roll)
-                    self.dataArray[activeChannel][-1] = np.random.randint(80) - 40
+                    self.dataArray[activeChannel][-1] = frame[activeChannel]
 
             for activeChannel in self.activeChannels:  # drawing the graph
                 self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
