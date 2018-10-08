@@ -42,17 +42,10 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
 
     def updateDataSelf(self):  # test with timer and random data-generation
         try:
-            for frame in self.completeFrames:
-                for activeChannel in self.activeChannels:
-                    self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
-                                                         1:]  # shift data in the array one sample left
-                    # (see also: np.roll)
-                    self.dataArray[activeChannel][-1] = frame[activeChannel]
-
             for activeChannel in self.activeChannels:  # drawing the graph
                 self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
         except:
-            print("2D Update:", sys.exc_info()[1])
+            print("2D UpdateGraph:", sys.exc_info()[1])
 
     def updateData(self, framesList):
         try:
@@ -117,6 +110,15 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
 
     def setCompleteFrames(self, completeFrames):
         self.completeFrames = completeFrames
+        try:
+            for frame in self.completeFrames:
+                for activeChannel in self.activeChannels:
+                    self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
+                                                         1:]  # shift data in the array one sample left
+                    # (see also: np.roll)
+                    self.dataArray[activeChannel][-1] = frame[activeChannel]
+        except:
+            print("2D UpdateData:", sys.exc_info()[1])
 
     def getCompleteFrames(self):
         return self.completeFrames
