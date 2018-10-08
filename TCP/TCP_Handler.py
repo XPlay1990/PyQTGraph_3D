@@ -69,15 +69,18 @@ class TCP_Handler:
                 print("Buffersize: ", len(self.completeFrames))
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
                 if self.updateFinished() and not self.stopUpdate:
+                    # App-Timer
                     timeAfterUpdate = datetime.datetime.now()
                     timeDiff = timeAfterUpdate - self.timeBeforeUpdate
                     elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
                     print("Redraw Time: ", elapsed_ms, ' ms')
                     self.timeBeforeUpdate = datetime.datetime.now()
 
+                    # updating graphs
                     self.updateGraphs()
 
-                    self.completeFrames = []
+                    # clear completeFrames
+                    self.completeFrames.clear()
             else:  # no "\n" found
                 self.incompleteFrames.append(chunk)
 
@@ -86,8 +89,9 @@ class TCP_Handler:
         self.graphfutures = []
         future = self.executor.submit(self.surface3d_Graph.updateData, self.completeFrames.copy())
         self.graphfutures.append(future)
-        future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames.copy())
-        self.graphfutures.append(future)
+        # future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames.copy())
+        # self.graphfutures.append(future)
+        self.line2D_Graph.setCompleteFrames(self.completeFrames.copy())
         # self.waitForUpdatesToFinish()
 
     def updateFinished(self):

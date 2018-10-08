@@ -15,6 +15,7 @@ class Surface3D_Graph(gl.GLViewWidget):
         super().__init__()
         self.numberOfData = defaultNumberOfData
         self.widthOfData = 500
+        self.offset = 0
         # pg.GraphicsWindow.__init__(self, **kargs)
         gl.GLViewWidget.__init__(self, **kargs)
         self.setParent(parent)
@@ -71,6 +72,8 @@ class Surface3D_Graph(gl.GLViewWidget):
             for frame in framesList:
                 self.surfaceData = np.delete(self.surfaceData, 0, 0)
                 frame = np.array(frame, ndmin=2)
+                for i in frame:
+                    i += self.offset
                 self.surfaceData = np.concatenate((self.surfaceData, frame))
                 # print("x", len(self.x), "y", len(self.y), "data", self.surfaceData.shape)
             self.surfacePlot.setData(z=self.surfaceData)
@@ -101,3 +104,6 @@ class Surface3D_Graph(gl.GLViewWidget):
             self.addSurfaceGraph()
         except:
             print("updateNumberOfData:", sys.exc_info()[1])
+
+    def updateOffset(self, offset):
+        self.offset = offset

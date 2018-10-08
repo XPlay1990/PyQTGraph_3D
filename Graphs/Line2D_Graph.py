@@ -26,7 +26,7 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
         # Use automatic downsampling and clipping to reduce the drawing load
         self.p1.setDownsampling(mode='peak')
         self.p1.setClipToView(True)
-        self.p1.setRange(xRange=[0, self.widthOfData])
+        # self.p1.setRange(xRange=[0, self.widthOfData], yRange=[-180, 100])
 
         self.dataArray = []
         for i in range(self.numberOfData):
@@ -36,6 +36,24 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
         # self.p1.enableAutoRange()
         self.initLines()
 
+        self.timer = pg.QtCore.QTimer()
+        self.timer.timeout.connect(self.updateDataSelf)
+        self.timer.start(20)
+
+    def updateDataSelf(self):  # test with timer and random data-generation
+        try:
+            for frame in self.completeFrames:
+                for activeChannel in self.activeChannels:
+                    self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
+                                                         1:]  # shift data in the array one sample left
+                    # (see also: np.roll)
+                    self.dataArray[activeChannel][-1] = frame[activeChannel]
+
+            for activeChannel in self.activeChannels:  # drawing the graph
+                self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
+        except:
+            print("2D Update:", sys.exc_info()[1])
+
     def updateData(self, framesList):
         try:
             for frame in framesList:  # Data Handling
@@ -43,7 +61,7 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
                     self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
                                                          1:]  # shift data in the array one sample left
                     # (see also: np.roll)
-                    self.dataArray[activeChannel][-1] = frame[activeChannel]
+                    self.dataArray[activeChannel][-1] = np.random.randint(80) - 40
 
             for activeChannel in self.activeChannels:  # drawing the graph
                 self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
@@ -96,3 +114,9 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
     def initLines(self):
         for index in self.activeChannels:
             self.linesList[index] = self.p1.plot(self.dataArray[index], pen=(index, 3))
+
+    def setCompleteFrames(self, completeFrames):
+        self.completeFrames = completeFrames
+
+    def getCompleteFrames(self):
+        return self.completeFrames
