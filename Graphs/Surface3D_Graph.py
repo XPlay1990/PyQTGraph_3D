@@ -49,7 +49,7 @@ class Surface3D_Graph(gl.GLViewWidget):
         self.y = np.linspace(-self.numberOfData / 2, self.numberOfData / 2, self.numberOfData)
         self.surfacePlot = gl.GLSurfacePlotItem(self.x, self.y, shader='heightColor', computeNormals=False,
                                                 smooth=False)  # smooth true = faster; dont turn on computenormals
-        self.surfacePlot.shader()['colorMap'] = np.array([0.01, 40, 0.5, 0.01, 40, 1, 0.01, 40, 2])  # lut
+        self.surfacePlot.shader()['colorMap'] = np.array([0.01, 0, 0.5, 0.01, 0, 1, 0.01, 0, 2])  # lut
         self.surfaceData = np.zeros((self.widthOfData, self.numberOfData), dtype=int)
 
         ## create a surface plot, tell it to use the 'heightColor' shader
