@@ -57,8 +57,8 @@ class TCP_Handler:
                 # completeFrame.replace('\r', '')
                 completeFrame = self.remove_multiple_strings(completeFrame, self.replace_list)
                 # print(completeFrame)
-                completeFrame = completeFrame.split(',')
-                completeFrame = list(map(int, completeFrame))
+                completeFrame = completeFrame.split(';')
+                #                completeFrame = list(map(int, completeFrame))
 
                 # fill up completeFrames-Array
                 self.incompleteFrames = []
@@ -81,17 +81,32 @@ class TCP_Handler:
 
                     # clear completeFrames
                     self.completeFrames.clear()
+                else:
+                    print("Waiting")
             else:  # no "\n" found
                 self.incompleteFrames.append(chunk)
 
     def updateGraphs(self):
+        rangeData = []
+        targetData = []
+        for frame in self.completeFrames:
+            if (frame[0] == "R"):
+                del frame[0]  # "R"
+                del frame[1]  # "0"
+                frame = list(map(int, frame))
+                rangeData.append(frame)
+            elif (frame[0] == "T"):
+                del frame[0]  # "T"
+                frame = list(map(int, frame))
+                targetData.append(frame)
+
         # starting independent Graph-Threads
         self.graphfutures = []
-        future = self.executor.submit(self.surface3d_Graph.updateData, self.completeFrames.copy())
+        future = self.executor.submit(self.surface3d_Graph.updateData, rangeData)
         self.graphfutures.append(future)
         # future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames.copy())
         # self.graphfutures.append(future)
-        self.line2D_Graph.setCompleteFrames(self.completeFrames.copy())
+        self.line2D_Graph.setCompleteFrames(targetData)
         # self.waitForUpdatesToFinish()
 
     def updateFinished(self):

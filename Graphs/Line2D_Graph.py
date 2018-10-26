@@ -12,6 +12,9 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
     pg.setConfigOption('foreground', 'k')
     ptr1 = 0
 
+    targetMapping = {"dist","db","phi","speed"}
+    mode = "dist"
+
     def __init__(self, defaultNumberOfData, parent=None, **kargs):
         # super().__init__()
         pg.GraphicsWindow.__init__(self, **kargs)
@@ -122,3 +125,8 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
 
     def getCompleteFrames(self):
         return self.completeFrames
+
+    def setMode(self, mode):
+        self.removeAllLines()
+        self.initLines()
+        self.mode = mode

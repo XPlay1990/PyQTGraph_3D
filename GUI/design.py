@@ -9,7 +9,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QListWidgetItem
 
-defaultNumberOfData = 129
+defaultNumberOfData = 128
 
 
 class Ui_MainWindow(object):
@@ -60,7 +60,7 @@ class Ui_MainWindow(object):
         self.gridLayout_5.addWidget(self.label_2, 0, 0, 1, 1)
         self.spinBox = QtWidgets.QSpinBox(self.gridLayoutWidget_2)
         self.spinBox.setMaximum(5000)
-        self.spinBox.setProperty("value", 1000)
+        self.spinBox.setProperty("value", defaultNumberOfData)
         self.spinBox.setObjectName("spinBox")
         self.gridLayout_5.addWidget(self.spinBox, 9, 2, 1, 3)
         self.pushButton_changeIncomingData = QtWidgets.QPushButton(self.gridLayoutWidget_2)
