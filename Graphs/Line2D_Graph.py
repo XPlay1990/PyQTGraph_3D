@@ -12,9 +12,6 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
     pg.setConfigOption('foreground', 'k')
     ptr1 = 0
 
-    targetMapping = {"dist","db","phi","speed"}
-    mode = "dist"
-
     def __init__(self, defaultNumberOfData, parent=None, **kargs):
         # super().__init__()
         pg.GraphicsWindow.__init__(self, **kargs)
@@ -31,10 +28,14 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
         self.p1.setClipToView(True)
         # self.p1.setRange(xRange=[0, self.widthOfData], yRange=[-180, 100])
 
-        self.dataArray = []
-        for i in range(self.numberOfData):
-            self.dataArray.append(np.zeros(self.widthOfData))
         self.activeChannels = []
+        self.row = []
+        self.col = []
+        self.targetNumber = 4
+        self.dataPerTarget = 4
+        self.dataArray = []
+        for i in range(self.targetNumber * self.dataPerTarget):
+            self.dataArray.append(np.zeros(self.widthOfData))
         self.linesList = {"lineIndex": "plot"}
         # self.p1.enableAutoRange()
         self.initLines()
@@ -45,24 +46,12 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
 
     def updateDataSelf(self):  # test with timer and random data-generation
         try:
-            for activeChannel in self.activeChannels:  # drawing the graph
-                self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
+            for index in range(len(self.row)):  # drawing the graph
+                rowNumber = self.row[index]
+                colNumber = self.col[index]
+                self.linesList[index].setData(self.graphrange, self.dataArray[rowNumber*self.dataPerTarget + colNumber])
         except:
             print("2D UpdateGraph:", sys.exc_info()[1])
-
-    def updateData(self, framesList):
-        try:
-            for frame in framesList:  # Data Handling
-                for activeChannel in self.activeChannels:
-                    self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
-                                                         1:]  # shift data in the array one sample left
-                    # (see also: np.roll)
-                    self.dataArray[activeChannel][-1] = frame[activeChannel]
-
-            for activeChannel in self.activeChannels:  # drawing the graph
-                self.linesList[activeChannel].setData(self.graphrange, self.dataArray[activeChannel])
-        except:
-            print("2D Update:", sys.exc_info()[1])
 
     # changes sample-quantity of the shown data
     def updateWidthOfData(self, quantity):
@@ -88,17 +77,10 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
             for _ in range(sizeDiff):
                 self.dataArray.pop(len(self.dataArray) - 1)
 
-    # add and remove 2D Lines
-    def addLines(self, lines):
+    def setActiveChannels(self, row, col):
+        self.row = row
+        self.col = col
         self.removeAllLines()
-        for lineIndex in lines:
-            self.activeChannels.append(int(lineIndex))
-        self.initLines()
-
-    def removeLines(self, lines):
-        self.removeAllLines()
-        for lineIndex in lines:
-            self.activeChannels.remove(int(lineIndex))
         self.initLines()
 
     def removeAllLines(self):
@@ -108,25 +90,22 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
         self.p1.enableAutoScale()
 
     def initLines(self):
-        for index in self.activeChannels:
+        for index in range(len(self.row)):
             self.linesList[index] = self.p1.plot(self.dataArray[index], pen=(index, 3))
 
     def setCompleteFrames(self, completeFrames):
         self.completeFrames = completeFrames
         try:
-            for frame in self.completeFrames:
-                for activeChannel in self.activeChannels:
-                    self.dataArray[activeChannel][:-1] = self.dataArray[activeChannel][
+            for targets in self.completeFrames:
+                for index in range(len(self.row)):
+                    rowNumber = self.row[index]
+                    colNumber = self.col[index]
+                    self.dataArray[rowNumber*self.dataPerTarget + colNumber][:-1] = self.dataArray[rowNumber*self.dataPerTarget + colNumber][
                                                          1:]  # shift data in the array one sample left
                     # (see also: np.roll)
-                    self.dataArray[activeChannel][-1] = frame[activeChannel]
+                    self.dataArray[rowNumber*self.dataPerTarget + colNumber][-1] = targets[rowNumber][colNumber]
         except:
             print("2D UpdateData:", sys.exc_info()[1])
 
     def getCompleteFrames(self):
         return self.completeFrames
-
-    def setMode(self, mode):
-        self.removeAllLines()
-        self.initLines()
-        self.mode = mode

@@ -19,7 +19,6 @@ class TCP_Handler:
     def __init__(self, surface3d_Graph, line2D_Graph, sock=None):
         self.surface3d_Graph = surface3d_Graph
         self.line2D_Graph = line2D_Graph
-        self.updateList = [self.surface3d_Graph.updateData, self.line2D_Graph.updateData]
         self.stopUpdate = False
         self.graphfutures = []
         if sock is None:
@@ -66,14 +65,14 @@ class TCP_Handler:
                 self.completeFrames.append(completeFrame)
                 # print(self.completeFrames)
 
-                print("Buffersize: ", len(self.completeFrames))
+                # print("Buffersize: ", len(self.completeFrames))
                 # Draw Graph if library is ready, otherwise buffer in completeFrames
                 if self.updateFinished() and not self.stopUpdate:
                     # App-Timer
                     timeAfterUpdate = datetime.datetime.now()
                     timeDiff = timeAfterUpdate - self.timeBeforeUpdate
                     elapsed_ms = (timeDiff.days * 86400000) + (timeDiff.seconds * 1000) + (timeDiff.microseconds / 1000)
-                    print("Redraw Time: ", elapsed_ms, ' ms')
+                    # print("Redraw Time: ", elapsed_ms, ' ms')
                     self.timeBeforeUpdate = datetime.datetime.now()
 
                     # updating graphs
@@ -81,15 +80,17 @@ class TCP_Handler:
 
                     # clear completeFrames
                     self.completeFrames.clear()
-                else:
-                    print("Waiting")
+                # else:
+                # print("Waiting")
             else:  # no "\n" found
                 self.incompleteFrames.append(chunk)
 
     def updateGraphs(self):
         rangeData = []
-        targetData = []
+        targets = []
+        intTargets = []
         for frame in self.completeFrames:
+            # print(frame)
             if (frame[0] == "R"):
                 del frame[0]  # "R"
                 del frame[1]  # "0"
@@ -97,8 +98,18 @@ class TCP_Handler:
                 rangeData.append(frame)
             elif (frame[0] == "T"):
                 del frame[0]  # "T"
-                frame = list(map(int, frame))
-                targetData.append(frame)
+                target = []
+                targets = []
+                index = 0
+                for i in frame:
+                    if i == '':
+                        targets.append(target)
+                        target = []
+                    else:
+                        target.append(i)
+                for t in targets:
+                    t = list(map(int, t))
+                    intTargets.append(t)
 
         # starting independent Graph-Threads
         self.graphfutures = []
@@ -106,7 +117,7 @@ class TCP_Handler:
         self.graphfutures.append(future)
         # future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames.copy())
         # self.graphfutures.append(future)
-        self.line2D_Graph.setCompleteFrames(targetData)
+        self.line2D_Graph.setCompleteFrames(intTargets)
         # self.waitForUpdatesToFinish()
 
     def updateFinished(self):
