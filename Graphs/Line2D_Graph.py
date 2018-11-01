@@ -31,7 +31,7 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
         self.activeChannels = []
         self.row = []
         self.col = []
-        self.targetNumber = 4
+        self.targetNumber = 5
         self.dataPerTarget = 4
         self.dataArray = []
         for i in range(self.targetNumber * self.dataPerTarget):
@@ -49,7 +49,8 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
             for index in range(len(self.row)):  # drawing the graph
                 rowNumber = self.row[index]
                 colNumber = self.col[index]
-                self.linesList[index].setData(self.graphrange, self.dataArray[rowNumber*self.dataPerTarget + colNumber])
+                calculatedIndex = rowNumber * self.dataPerTarget + colNumber
+                self.linesList[index].setData(self.graphrange, self.dataArray[calculatedIndex])
         except:
             print("2D UpdateGraph:", sys.exc_info()[1])
 
@@ -77,10 +78,16 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
             for _ in range(sizeDiff):
                 self.dataArray.pop(len(self.dataArray) - 1)
 
+    def resetDataArray(self):
+        self.dataArray = []
+        for i in range(self.targetNumber * self.dataPerTarget):
+            self.dataArray.append(np.zeros(self.widthOfData))
+
     def setActiveChannels(self, row, col):
         self.row = row
         self.col = col
         self.removeAllLines()
+        self.resetDataArray()
         self.initLines()
 
     def removeAllLines(self):
@@ -100,10 +107,11 @@ class Line2DGraph(pg.GraphicsLayoutWidget):
                 for index in range(len(self.row)):
                     rowNumber = self.row[index]
                     colNumber = self.col[index]
-                    self.dataArray[rowNumber*self.dataPerTarget + colNumber][:-1] = self.dataArray[rowNumber*self.dataPerTarget + colNumber][
-                                                         1:]  # shift data in the array one sample left
+                    calculatedIndex = rowNumber * self.dataPerTarget + colNumber
+                    self.dataArray[calculatedIndex][:-1] = self.dataArray[calculatedIndex][
+                                                           1:]  # shift data in the array one sample left
                     # (see also: np.roll)
-                    self.dataArray[rowNumber*self.dataPerTarget + colNumber][-1] = targets[rowNumber][colNumber]
+                    self.dataArray[calculatedIndex][-1] = targets[rowNumber][colNumber]
         except:
             print("2D UpdateData:", sys.exc_info()[1])
 

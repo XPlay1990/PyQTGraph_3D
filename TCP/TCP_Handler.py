@@ -88,6 +88,7 @@ class TCP_Handler:
     def updateGraphs(self):
         rangeData = []
         targets = []
+        completeTargetFrames = []
         intTargets = []
         for frame in self.completeFrames:
             # print(frame)
@@ -107,9 +108,11 @@ class TCP_Handler:
                         target = []
                     else:
                         target.append(i)
+                targets.append(target)
                 for t in targets:
                     t = list(map(int, t))
                     intTargets.append(t)
+                completeTargetFrames.append(intTargets)
 
         # starting independent Graph-Threads
         self.graphfutures = []
@@ -117,7 +120,7 @@ class TCP_Handler:
         self.graphfutures.append(future)
         # future = self.executor.submit(self.line2D_Graph.updateData, self.completeFrames.copy())
         # self.graphfutures.append(future)
-        self.line2D_Graph.setCompleteFrames(intTargets)
+        self.line2D_Graph.setCompleteFrames(completeTargetFrames)
         # self.waitForUpdatesToFinish()
 
     def updateFinished(self):
